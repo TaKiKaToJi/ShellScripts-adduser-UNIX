@@ -5,18 +5,16 @@ detect_os() {
     if [ -f /etc/os-release ]; then
         # Source os-release to get the distribution name
         . /etc/os-release
-        case "$ID" in
-            ubuntu|debian)
-                ADMIN_GROUP="sudo"   # Ubuntu and Debian use the sudo group
-                ;;
-            centos|rocky|alma|rhel)
-                ADMIN_GROUP="wheel"  # CentOS, Rocky, Alma, RHEL use the wheel group
-                ;;
-            *)
-                echo "Unsupported Linux distribution: $ID"
-                exit 1
-                ;;
-        esac
+
+        # Check ID and ID_LIKE to catch similar distributions
+        if [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
+            ADMIN_GROUP="sudo"  # Ubuntu and Debian use the sudo group
+        elif [[ "$ID" == "centos" || "$ID" == "rocky" || "$ID" == "almalinux" || "$ID_LIKE" == *"rhel"* ]]; then
+            ADMIN_GROUP="wheel" # CentOS, Rocky, AlmaLinux, and RHEL use the wheel group
+        else
+            echo "Unsupported Linux distribution: $ID"
+            exit 1
+        fi
     else
         echo "Cannot detect the OS. Exiting."
         exit 1
@@ -43,20 +41,19 @@ add_user() {
 # Detect the operating system to set the correct admin group
 detect_os
 
-# Array of users and passwords
-declare -A users_passwords=(
-    ["nueng"]="compcenter"
-    ["nat"]="compcenter"
-    ["wathit"]="compcenter"
-)
+# Check if the users.txt file exists
+if [ ! -f users.txt ]; then
+    echo "Error: users.txt file not found!"
+    exit 1
+fi
 
-# Loop through the array and add each user
-for USERNAME in "${!users_passwords[@]}"; do
-    add_user "$USERNAME" "${users_passwords[$USERNAME]}"
-done
+# Read the users.txt file and process each user
+while IFS=: read -r USERNAME PASSWORD; do
+    add_user "$USERNAME" "$PASSWORD"
+done < users.txt
 
 echo "All users have been created."
 echo "Displaying newly added users:"
 
 # List only the newly added users from /etc/passwd
-cut -d: -f1 /etc/passwd | grep -E "$(IFS=\|; echo "${!users_passwords[*]}")"
+cut -d: -f1 /etc/passwd | grep -E "$(IFS=\|; echo "$(cut -d: -f1 users.txt | tr '\n' '|')" | sed 's/|$//')"

@@ -1,2 +1,27 @@
-# ShellScripts-adduser-UNIX
-This Bash script dynamically creates users on various Linux distributions (Ubuntu, CentOS, Rocky, AlmaLinux, Debian) by reading usernames and passwords from an external users.txt file. It detects the appropriate admin group (wheel or sudo) based on the OS and automatically adds users to the group, ensuring easy user management.
+# User Management Script
+
+This script simplifies adding users and granting them administrative privileges on various Linux distributions (CentOS, Ubuntu, Rocky, Debian, AlmaLinux). It reads usernames and passwords from an external users.txt file, making it easy to add or update users without modifying the script.
+
+## How to Use
+
+1.Clone the repository
+
+```bash
+git clone https://github.com/TaKiKaToJi/ShellScripts-adduser-UNIX.git
+cd ShellScripts-adduser-UNIX
+```
+2.Create or modify the users.txt file:
+```bash
+username:password
+nueng:compcenter
+nat:compcenter
+wathit:compcenter
+```
+
+3.Give execution permission and run the script:
+```bash
+chmod +x AutoAdduser.sh
+sudo ./AutoAdduser.sh
+```
+4.The script will create the users and display them from /etc/passwd.
+
