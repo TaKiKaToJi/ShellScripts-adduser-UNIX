@@ -75,8 +75,8 @@ delete_script() {
 
 # Main menu for user interaction
 echo "Choose an option:"
-echo "1. Add user (edit users.txt and run)"
-echo "2. Manage users (edit users.txt)"
+echo "1. Add user"
+echo "2. Manage users"
 echo "3. Exit and delete this script"
 read -p "Enter your choice [1-3]: " choice
 
