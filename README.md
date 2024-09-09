@@ -12,10 +12,10 @@ cd ShellScripts-adduser-UNIX
 ```
 2.Create or modify the users.txt file:
 ```bash
-username:password
-nueng:compcenter
-nat:compcenter
-wathit:compcenter
+username1:password1
+username2:password2
+username3:password3
+username4:password4
 ```
 
 3.Give execution permission and run the script:
