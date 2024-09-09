@@ -1,16 +1,15 @@
 #!/bin/bash
 
+USERS_FILE="users.txt"
+
 # Function to detect the operating system and set the appropriate admin group
 detect_os() {
     if [ -f /etc/os-release ]; then
-        # Source os-release to get the distribution name
         . /etc/os-release
-
-        # Check ID and ID_LIKE to catch similar distributions
         if [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
-            ADMIN_GROUP="sudo"  # Ubuntu and Debian use the sudo group
+            ADMIN_GROUP="sudo"
         elif [[ "$ID" == "centos" || "$ID" == "rocky" || "$ID" == "almalinux" || "$ID_LIKE" == *"rhel"* ]]; then
-            ADMIN_GROUP="wheel" # CentOS, Rocky, AlmaLinux, and RHEL use the wheel group
+            ADMIN_GROUP="wheel"
         else
             echo "Unsupported Linux distribution: $ID"
             exit 1
@@ -38,22 +37,65 @@ add_user() {
     echo "User $USERNAME created and added to the $ADMIN_GROUP group."
 }
 
-# Detect the operating system to set the correct admin group
+# Function to manage users via the users.txt file
+manage_users() {
+    if [ ! -f "$USERS_FILE" ]; then
+        echo "File users.txt does not exist. Creating users.txt..."
+        touch "$USERS_FILE"
+    fi
+
+    echo "Opening users.txt for editing..."
+    nano "$USERS_FILE"
+}
+
+# Function to add users from the users.txt file
+add_users_from_file() {
+    if [ ! -f "$USERS_FILE" ]; then
+        echo "File users.txt not found. Exiting."
+        exit 1
+    fi
+
+    while IFS=: read -r username password; do
+        if [[ -n "$username" && -n "$password" ]]; then
+            add_user "$username" "$password"
+        else
+            echo "Skipping invalid entry in users.txt: $username:$password"
+        fi
+    done < "$USERS_FILE"
+
+    echo "All users from $USERS_FILE have been added."
+}
+
+# Function to delete this script
+delete_script() {
+    echo "Deleting this script..."
+    rm -- "$0"
+    echo "Script deleted."
+}
+
+# Main menu for user interaction
+echo "Choose an option:"
+echo "1. Add user (edit users.txt and run)"
+echo "2. Manage users (edit users.txt)"
+echo "3. Exit and delete this script"
+read -p "Enter your choice [1-3]: " choice
+
 detect_os
 
-# Check if the users.txt file exists
-if [ ! -f users.txt ]; then
-    echo "Error: users.txt file not found!"
-    exit 1
-fi
-
-# Read the users.txt file and process each user
-while IFS=: read -r USERNAME PASSWORD; do
-    add_user "$USERNAME" "$PASSWORD"
-done < users.txt
-
-echo "All users have been created."
-echo "Displaying newly added users:"
-
-# List only the newly added users from /etc/passwd
-cut -d: -f1 /etc/passwd | grep -E "$(IFS=\|; echo "$(cut -d: -f1 users.txt | tr '\n' '|')" | sed 's/|$//')"
+case "$choice" in
+    1)
+        manage_users
+        add_users_from_file
+        ;;
+    2)
+        manage_users
+        ;;
+    3)
+        delete_script
+        exit 0
+        ;;
+    *)
+        echo "Invalid option. Exiting."
+        exit 1
+        ;;
+esac
