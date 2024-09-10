@@ -1,4 +1,1 @@
 username1:password
-username2:compcenter
-username3:compcenter
-username4:compcenter
