@@ -3,21 +3,17 @@
 USERS_FILE="users.txt"
 
 # Function to detect the operating system and set the appropriate admin group
-detect_os() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        if [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
-            ADMIN_GROUP="sudo"
-        elif [[ "$ID" == "centos" || "$ID" == "rocky" || "$ID" == "almalinux" || "$ID_LIKE" == *"rhel"* ]]; then
-            ADMIN_GROUP="wheel"
-        else
-            echo "Unsupported Linux distribution: $ID"
-            exit 1
-        fi
-    else
-        echo "Cannot detect the OS. Exiting."
-        exit 1
-    fi
+detect_os_adduser() {
+  if [ -f /etc/redhat-release ]; then
+    OS="Red Hat-Based"
+    ADMIN_GROUP="wheel"
+  elif [ -f /etc/debian_version ]; then
+    OS="Debian-Based"
+    ADMIN_GROUP="sudo"
+  else
+    echo "Unsupported OS. Exiting."
+    exit 1
+  fi
 }
 
 # Function to add user, set password, and add to the admin group
